@@ -22,7 +22,7 @@ class RequestPreset(BaseModel):
     bearer_token: Optional[str] = None
     basic_user: Optional[str] = None
     basic_pass: Optional[str] = None
-    body_mode: str = "none"  # none | json | raw
+    body_mode: Optional[str] = None  # None | json | raw
     body_raw: str = ""
     timeout_s: float = 20.0
     verify_ssl: bool = True
@@ -109,14 +109,20 @@ with st.form("request_form", clear_on_submit=False):
         )
 
     with t_body:
-        body_mode = st.radio("Body mode", ["none", "json", "raw"], horizontal=True)
-        body_raw = ""
-        if body_mode == "json":
-            st.caption("Send HTTP requests and read responses easily.")
-            body_raw = st.text_area("JSON body", value="{\n  \"example\": true\n}", height=180)
-        elif body_mode == "raw":
-            st.caption("Raw text. We don't force Content-Type.")
-            body_raw = st.text_area("Raw body", value="", height=180)
+        if method == "GET":
+            st.info("GET requests typically do not include a body. Switch to POST, PUT, PATCH, or DELETE to send data.")
+            body_mode = None
+            body_raw = ""
+        else:
+            mode_selection = st.radio("Body mode", ["none", "json", "raw"], horizontal=True)
+            body_mode = mode_selection if mode_selection != "none" else None
+            body_raw = ""
+            if body_mode == "json":
+                st.caption("Send HTTP requests and read responses easily.")
+                body_raw = st.text_area("JSON body", value="{\n  \"example\": true\n}", height=180)
+            elif body_mode == "raw":
+                st.caption("Raw text. We don't force Content-Type.")
+                body_raw = st.text_area("Raw body", value="", height=180)
 
     with t_auth:
         auth_type = st.radio("Auth type", ["None", "Bearer", "Basic"], horizontal=True)
